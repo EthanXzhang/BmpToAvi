@@ -1,0 +1,4 @@
+﻿  RandomAviOutput.cpp
+g:\my projects\vs2017\randomavioutput\randomavioutput\randomavioutput.cpp : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  RandomAviOutput.vcxproj -> G:\My Projects\VS2017\RandomAviOutput\Debug\RandomAviOutput.exe
+  RandomAviOutput.vcxproj -> G:\My Projects\VS2017\RandomAviOutput\Debug\RandomAviOutput.pdb (Partial PDB)
