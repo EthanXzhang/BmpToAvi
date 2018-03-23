@@ -7,10 +7,11 @@
 #include "Vfw.h"
 #include  <direct.h>  
 #include  <stdio.h> 
+#include <string>
 //#include "afx.h"
 
-void ImageToAVI(CString AviPath, CString ImgPath, int videoWidth, int videoHeight, int bpp);
-void CreateAVI(CImage img, CString name, int videoWidth, int videoHeight, int bpp);
+void ImageToAVI(CString AviPath, CString ImgPath);
+void CreateAVI(FILE* img, CString name, int videoWidth, int videoHeight, int bpp);
 //argv[1]=输入BMP文件夹，argv[2]=输出文件名
 int main(int argc, char *argv[])
 {
@@ -36,7 +37,7 @@ int main(int argc, char *argv[])
 		output = rootpath;
 	}
 
-	ImageToAVI(output, input,1920,1080,24);
+	ImageToAVI(output, input);
 	printf("BMP to AVI All Done! \n");
 	return 0;
 }
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
 // 功能 : 将目录中的BMP图像无压缩封装为AVI视频
 //
 //======================================================================================
-void ImageToAVI(CString AviPath, CString ImgPath, int videoWidth, int videoHeight, int bpp)
+void ImageToAVI(CString AviPath, CString ImgPath)
 {
 	// 初始化AVI 库
 	AVIFileInit();
@@ -66,14 +67,23 @@ void ImageToAVI(CString AviPath, CString ImgPath, int videoWidth, int videoHeigh
 			//拷贝bmp图片文件名作为生成avi文件名
 			//
 			// Open Image and get image info & data
-			//
-			CImage img;
+			//使用CImage读取图片信息
+			CImage img;		
 			if (FAILED(img.Load(str)))
 			{
 				TRACE("Warning : fail to load file %s!!!\n", str);
 				continue;
 			}
-			CreateAVI(img,name,img.GetWidth(),img.GetHeight(),img.GetBPP());//创建avi视频函数
+			int w, h,bpp;
+			w = img.GetWidth();
+			h = img.GetHeight();
+			bpp = img.GetBPP();
+			img.Destroy();
+			//释放CImage，使用FILE读写图片数据
+			std::string s = CT2A(str.GetBuffer(0));
+			FILE *fp;
+			fopen_s(&fp,s.c_str(), "rb");
+			CreateAVI(fp,name,w,h,bpp);//创建avi视频函数
 			printf("BMP to AVI Done and Go Next! \n");
 			
 		}
@@ -82,7 +92,7 @@ void ImageToAVI(CString AviPath, CString ImgPath, int videoWidth, int videoHeigh
 	AVIFileExit();
 
 }
-void CreateAVI(CImage img,CString name, int videoWidth, int videoHeight, int bpp)
+void CreateAVI(FILE *img,CString name, int videoWidth, int videoHeight, int bpp)
 {
 	//
 	// Create AVI file
@@ -164,20 +174,9 @@ void CreateAVI(CImage img,CString name, int videoWidth, int videoHeight, int bpp
 	//
 	if (pData)
 	{
-		for (int nFrames = 0; nFrames< 5; nFrames++)//同一图像拷贝5帧，由图像生成5秒avi视频
+		for (int nFrames = 0; nFrames< 10; nFrames++)//同一图像拷贝10帧，由图像生成10秒avi视频
 		{
-			int w = min(videoWidth, img.GetWidth());
-			int h = min(videoHeight, img.GetHeight());
-
-			for (int i = 0; i < h; i++)
-				for (int j = 0; j < w; j++)
-				{
-					COLORREF clr = img.GetPixel(j, h - 1 - i);//(j,i)
-
-					pData[i * pitch + j * (bpp / 8) + 0] = GetBValue(clr);
-					pData[i * pitch + j * (bpp / 8) + 1] = GetGValue(clr);
-					pData[i * pitch + j * (bpp / 8) + 2] = GetRValue(clr);
-				}
+			fread(pData, 1, videoWidth * videoHeight * 3, img);
 			hr = AVIStreamWrite(pAviStream, nFrames, 1, pData, biSizeImage, AVIIF_KEYFRAME, NULL, NULL);
 		}
 
