@@ -1,1 +1,4 @@
-﻿  RandomAviOutput.vcxproj -> G:\My Projects\VS2017\BmpToAvi\Debug\RandomAviOutput.exe
+﻿  RandomAviOutput.cpp
+g:\my projects\vs2017\bmptoavi\randomavioutput\randomavioutput.cpp(1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+g:\my projects\vs2017\bmptoavi\randomavioutput\randomavioutput.cpp(116): warning C4244: “=”: 从“double”转换到“DWORD”，可能丢失数据
+  RandomAviOutput.vcxproj -> G:\My Projects\VS2017\BmpToAvi\Debug\RandomAviOutput.exe

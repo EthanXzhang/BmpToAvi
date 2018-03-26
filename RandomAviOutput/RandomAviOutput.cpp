@@ -11,7 +11,7 @@
 //#include "afx.h"
 
 void ImageToAVI(CString AviPath, CString ImgPath);
-void CreateAVI(FILE* img, CString name, int videoWidth, int videoHeight, int bpp);
+void CreateAVI(CImage img, CString name, int videoWidth, int videoHeight, int bpp);
 //argv[1]=输入BMP文件夹，argv[2]=输出文件名
 int main(int argc, char *argv[])
 {
@@ -78,12 +78,12 @@ void ImageToAVI(CString AviPath, CString ImgPath)
 			w = img.GetWidth();
 			h = img.GetHeight();
 			bpp = img.GetBPP();
-			img.Destroy();
+			//img.Destroy();
 			//释放CImage，使用FILE读写图片数据
-			std::string s = CT2A(str.GetBuffer(0));
-			FILE *fp;
-			fopen_s(&fp,s.c_str(), "rb");
-			CreateAVI(fp,name,w,h,bpp);//创建avi视频函数
+			//std::string s = CT2A(str.GetBuffer(0));
+			//FILE *fp;
+			//fopen_s(&fp,s.c_str(), "rb");
+			CreateAVI(img,name,w,h,bpp);//创建avi视频函数
 			printf("BMP to AVI Done and Go Next! \n");
 			
 		}
@@ -92,7 +92,7 @@ void ImageToAVI(CString AviPath, CString ImgPath)
 	AVIFileExit();
 
 }
-void CreateAVI(FILE *img,CString name, int videoWidth, int videoHeight, int bpp)
+void CreateAVI(CImage img,CString name, int videoWidth, int videoHeight, int bpp)
 {
 	//
 	// Create AVI file
@@ -113,7 +113,7 @@ void CreateAVI(FILE *img,CString name, int videoWidth, int videoHeight, int bpp)
 	strhdr.fccType = streamtypeVIDEO;
 	strhdr.fccHandler = mmioFOURCC('X', 'V', 'I', 'D');
 	strhdr.dwScale = 1;
-	strhdr.dwRate = 1;
+	strhdr.dwRate = 0.1;
 	//设置帧速 1秒/帧
 
 	UINT pitch = (videoWidth * bpp + 31) / 32 * 4;
@@ -174,12 +174,21 @@ void CreateAVI(FILE *img,CString name, int videoWidth, int videoHeight, int bpp)
 	//
 	if (pData)
 	{
-		for (int nFrames = 0; nFrames< 10; nFrames++)//同一图像拷贝10帧，由图像生成10秒avi视频
+		for (int nFrames = 0; nFrames < 1; nFrames++)//同一图像拷贝10帧，由图像生成10秒avi视频
 		{
-			fread(pData, 1, videoWidth * videoHeight * 3, img);
+			for (int i = 0; i < videoHeight; i++)
+			{
+				for (int j = 0; j < videoWidth; j++)
+				{
+					COLORREF clr = img.GetPixel(j, videoHeight - 1 - i);//(j,i)  
+					pData[i * pitch + j * (bpp / 8) + 0] = GetBValue(clr);
+					pData[i * pitch + j * (bpp / 8) + 1] = GetGValue(clr);
+					pData[i * pitch + j * (bpp / 8) + 2] = GetRValue(clr);
+
+				}
+			}
 			hr = AVIStreamWrite(pAviStream, nFrames, 1, pData, biSizeImage, AVIIF_KEYFRAME, NULL, NULL);
 		}
-
 	}
 
 
